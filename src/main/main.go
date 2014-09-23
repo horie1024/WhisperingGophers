@@ -17,27 +17,22 @@
 package main
 
 import (
-	_ "bufio"
-	_ "encoding/json"
-	"flag"
 	"fmt"
-	_ "log"
-	_ "os"
-	"time"
+	"io"
+	"log"
+	"net"
+	"os"
 )
-
-var (
-	message = flag.String("message", "Hello!", "what to say")
-	delay   = flag.Duration("delay", 2*time.Second, "how long to wait")
-)
-
-type Message struct {
-	Body string
-}
 
 func main() {
 
-	flag.Parse()
-	fmt.Println(*message)
-	time.Sleep(*delay)
+	c, err := net.Dial("tcp", "www.google.com:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Fprintln(c, "GET /")
+	io.Copy(os.Stdout, c)
+	c.Close()
+
 }
