@@ -8,10 +8,14 @@
 package main
 
 import (
-	"bufio"
-	"encoding/json"
-	"log"
+	_ "bufio"
+	"compress/gzip"
+	"encoding/base64"
+	_ "encoding/json"
+	"io"
+	_ "log"
 	"os"
+	"strings"
 )
 
 type Message struct {
@@ -19,6 +23,13 @@ type Message struct {
 }
 
 func main() {
+
+	var r io.Reader
+	r = strings.NewReader(data)
+	r = base64.NewDecoder(base64.StdEncoding, r)
+	r, _ = gzip.NewReader(r)
+	io.Copy(os.Stdout, r)
+
 	// TODO: Create a new bufio.Scanner reading from the standard input.
 	// TODO: Create a new json.Encoder writing into the standard output.
 	for /* TODO: Iterate over every line in the scanner */ {
@@ -27,3 +38,7 @@ func main() {
 	}
 	// TODO: Check for a scan error.
 }
+
+const data = `
+H4sIAAAJbogA/1SOO5KDQAxE8zlFZ5tQXGCjjfYIjoURoPKgcY0E57f4VZlQXf2e+r8yOYbMZJhoZWRxz3wkCVjeReETS0VHz5fBCzpxxg/PbfrT/gacCjbjeiRNOChaVkA9RAdR8eVEw4vxa0Dcs3Fe2ZqowpeqG79L995l3VaMBUV/02OS+B6kMWikwG51c8n5GnEPr11F2/QJAAD//z9IppsHAQAA
+`
