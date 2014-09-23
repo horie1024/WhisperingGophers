@@ -17,22 +17,54 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"bufio"
+	"encoding/json"
+	"flag"
 	"log"
 	"net"
 	"os"
 )
 
+var dialAddr = flag.String("dial", "localhost:8000", "host:port to dial")
+
+type Message struct {
+	Body string
+}
+
 func main() {
 
-	c, err := net.Dial("tcp", "www.google.com:80")
+	// Parse the flags.
+	flag.Parse()
+
+	// Open a new connection using the value of the "dial" flag.
+	c, err := net.Dial("tcp", *dialAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Fprintln(c, "GET /")
-	io.Copy(os.Stdout, c)
-	c.Close()
+	// Create a new bufio.Scanner reading from the standard input.
+	s := bufio.NewScanner(os.Stdin)
 
+	// Create a json.Encoder writing into the connection you created before.
+	enc := json.NewEncoder(c)
+
+	// Iterate over every line in the scanner
+	for s.Scan() {
+
+		// Create a new message with the read text.
+		msg := Message{
+			Body: s.Text(),
+		}
+
+		// Encode the message, and check for errors!
+		err := enc.Encode(msg)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// Check for a scan error.
+	if err := s.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
